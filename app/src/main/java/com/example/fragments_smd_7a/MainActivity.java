@@ -2,6 +2,8 @@ package com.example.fragments_smd_7a;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -11,33 +13,65 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
-public class MainActivity extends AppCompatActivity {
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 
-    View portrait, lanscape;
+public class MainActivity extends AppCompatActivity implements ListFrag.OnItemClick {
+
+    LinearLayout portrait, lanscape;
+    TextView tvDetail;
+    Fragment list_frag, detail_frag;
+    FragmentManager manager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
         portrait = findViewById(R.id.portrait);
+        manager = getSupportFragmentManager();
+        list_frag = manager.findFragmentById(R.id.listfrag);
+        detail_frag = manager.findFragmentById(R.id.detailfrag);
 
-        if(portrait!=null)
+        tvDetail = detail_frag.getView().findViewById(R.id.tvDetail);
+
+        dummyMethodAddNewRecord();
+
+        if (portrait != null)
         {
-            Toast.makeText(this, "Phone is in Portrait mode", Toast.LENGTH_SHORT).show();
+            manager.beginTransaction().show(list_frag).hide(detail_frag)
+                    .commit();
         }
         else
         {
-            Toast.makeText(this, "Phone is in lanscape mode", Toast.LENGTH_SHORT).show();
+            manager.beginTransaction().show(list_frag).show(detail_frag)
+                    .commit();
         }
 
+    }
 
+    @Override
+    public void onClick(int index) {
+        tvDetail.setText(MyApplication.details.get(index));
+        if (portrait != null)
+        {
+            manager.beginTransaction().hide(list_frag).show(detail_frag)
+                    .addToBackStack(null)
+                    .commit();
+        }
 
+    }
+
+    public void dummyMethodAddNewRecord()
+    {
+        MyApplication.items.add("New Item");
+        MyApplication.details.add("Detail of New Item");
+        ListFrag obj = (ListFrag) list_frag;
+        obj.onDataChanged();
     }
 }
